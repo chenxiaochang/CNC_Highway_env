@@ -1,7 +1,7 @@
 This event was forked from eleurent/highway-env，we will update some new environments to test experiment results.
 ## Installation this event
 
-`pip install --user git+https://github.com/chenxiaochang/highway-env`
+`pip install --user git+https://github.com/chenxiaochang/CNC_Highway_env`
 
 ## Usages(same with the author) 
 
