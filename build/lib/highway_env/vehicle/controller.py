@@ -81,7 +81,7 @@ class ControlledVehicle(Vehicle):
 
         :param action: a high-level action
         """
-        self.follow_road()
+        self.follow_road()   # 此行命令仅仅改变ego-vehicle的最终不发生自动换道路
         if action == "FASTER":
             self.target_speed += self.DELTA_SPEED
         elif action == "SLOWER":

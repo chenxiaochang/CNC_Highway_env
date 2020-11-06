@@ -108,9 +108,9 @@ class KinematicObservation(ObservationType):
 
     def __init__(self, env: 'AbstractEnv',
                  features: List[str] = None,
-                 vehicles_count: int = 5,
+                  vehicles_count: int = 5,
                  features_range: Dict[str, List[float]] = None,
-                 absolute: bool = False,
+                 absolute: bool = False,  # 车辆的绝对位置和速度  absolute=true / normalize=false
                  order: str = "sorted",
                  normalize: bool = True,
                  clip: bool = True,

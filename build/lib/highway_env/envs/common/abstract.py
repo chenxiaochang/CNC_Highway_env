@@ -91,7 +91,7 @@ class AbstractEnv(gym.Env):
             "screen_height": 150,  # [px]
             "centering_position": [0.3, 0.5],
             "scaling": 5.5,
-            "show_trajectories": False,
+            "show_trajectories": True,
             "render_agent": True,
             "offscreen_rendering": os.environ.get("OFFSCREEN_RENDERING", "0") == "1",
             "manual_control": False
