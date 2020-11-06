@@ -1,3 +1,12 @@
+This event was forked from eleurent/highway-env，we will update some new environments to test experiment results.
+## Installation this event
+
+`pip install --user git+https://github.com/chenxiaochang/CNC_Highway_env`
+
+## Usages(same with the author) 
+
+The details of this event are described as below.  
+
 # highway-env
 [![build](https://github.com/eleurent/highway-env/workflows/build/badge.svg)](https://github.com/eleurent/highway-env/actions?query=workflow%3Abuild)
 [![Documentation Status](https://readthedocs.org/projects/highway-env/badge/?version=latest)](https://highway-env.readthedocs.io/en/latest/?badge=latest)

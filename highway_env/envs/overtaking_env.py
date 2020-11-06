@@ -66,9 +66,9 @@ class OvertakingEnv(AbstractEnv):
         """
         neighbours = self.road.network.all_side_lanes(self.vehicle.lane_index)  # 获得同一道路的所有车道索引
         # print(neighbours)  # [('a', 'b', 0), ('a', 'b', 1)]  len(neighbours)=2
-        # print(self.vehicle.speed_index)  # input speed about 25,and the index=1
-        reward = self.COLLISION_REWARD * self.vehicle.crashed + \
-                 self.HIGH_SPEED_REWARD * self.vehicle.speed_index / (self.vehicle.SPEED_COUNT - 1) \
+
+        # print(self.vehicle.speed_index)  # input speed about 20,and the index=2
+        reward = self.COLLISION_REWARD * self.vehicle.crashed + self.HIGH_SPEED_REWARD * self.vehicle.speed_index / (self.vehicle.SPEED_COUNT - 1) \
                  + self.LEFT_LANE_REWARD * (len(neighbours) - 1 - self.vehicle.target_lane_index[2]) / (
                          len(neighbours) - 1) + self.RIGHT_LANE_REWARD * (self.vehicle.target_lane_index[2]) / (
                          len(neighbours) - 1)
@@ -83,13 +83,14 @@ class OvertakingEnv(AbstractEnv):
 
         return reward
 
+
     def _is_terminal(self) -> bool:
         """The episode is over if the ego vehicle crashed or the time is out."""
         return self.vehicle.crashed or self.steps >= self.config["duration"]  # 没效果，why？
 
-    # def _cost(self, action: int) -> float:  # 成本函数=碰撞成本+对车道行驶的时间成本
-    #     """The constraint signal is the time spent driving on the opposite lane, and occurrence of collisions."""
-    #     return float(self.vehicle.crashed) + float(self.vehicle.lane_index[2] == 0) / 15
+    def _cost(self, action: int) -> float:  # 成本函数=碰撞成本+对车道行驶的时间成本
+        """The constraint signal is the time spent driving on the opposite lane, and occurrence of collisions."""
+        return float(self.vehicle.crashed) + float(self.vehicle.lane_index[2] == 0) / 15
 
     def reset(self) -> np.ndarray:
         super().reset()
