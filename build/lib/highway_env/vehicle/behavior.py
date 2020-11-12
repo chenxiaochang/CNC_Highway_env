@@ -38,7 +38,7 @@ class IDMVehicle(ControlledVehicle):
     """Exponent of the velocity term."""
 
     # Lateral policy parameters
-    POLITENESS = 0.  # in [0, 1]
+    POLITENESS = 0.5  # in [0, 1]
     LANE_CHANGE_MIN_ACC_GAIN = 0.2  # [m/s2]
     LANE_CHANGE_MAX_BRAKING_IMPOSED = 2.0  # [m/s2]
     LANE_CHANGE_DELAY = 1.0  # [s]
@@ -89,7 +89,7 @@ class IDMVehicle(ControlledVehicle):
         action = {}
         front_vehicle, rear_vehicle = self.road.neighbour_vehicles(self)
         # Lateral: MOBIL
-        self.follow_road()
+        # self.follow_road()
         if self.enable_lane_change:
             self.change_lane_policy()
         action['steering'] = self.steering_control(self.target_lane_index)
@@ -101,7 +101,7 @@ class IDMVehicle(ControlledVehicle):
                                                    rear_vehicle=rear_vehicle)
         # action['acceleration'] = self.recover_from_stop(action['acceleration'])
         action['acceleration'] = np.clip(action['acceleration'], -self.ACC_MAX, self.ACC_MAX)
-        #Vehicle.act(self, action)  # Skip ControlledVehicle.act(), or the command will be overriden.
+        Vehicle.act(self, action)  # Skip ControlledVehicle.act(), or the command will be overriden.
         # ControlledVehicle.act(self,action)  # Skip ControlledVehicle.act(), or the command will be overriden.
 
     def step(self, dt: float):

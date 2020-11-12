@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 
 
 class Vehicle(Loggable):
-
     """
     A moving vehicle on a road, and its kinematics.
 
@@ -82,14 +81,14 @@ class Vehicle(Loggable):
         """
         if speed is None:
             speed = road.np_random.uniform(Vehicle.DEFAULT_SPEEDS[0], Vehicle.DEFAULT_SPEEDS[1])
-        default_spacing = 1.5*speed
+        default_spacing = 1.5 * speed
         _from = road.np_random.choice(list(road.network.graph.keys()))
         _to = road.np_random.choice(list(road.network.graph[_from].keys()))
         _id = road.np_random.choice(len(road.network.graph[_from][_to]))
         lane = road.network.get_lane((_from, _to, _id))
         offset = spacing * default_spacing * np.exp(-5 / 30 * len(road.network.graph[_from][_to]))
         x0 = np.max([lane.local_coordinates(v.position)[0] for v in road.vehicles]) \
-            if len(road.vehicles) else 3*offset
+            if len(road.vehicles) else 3 * offset
         x0 += offset * road.np_random.uniform(0.9, 1.1)
         v = cls(road, lane.position(x0, 0), lane.heading_at(x0), speed)
         return v
@@ -139,7 +138,7 @@ class Vehicle(Loggable):
     def clip_actions(self) -> None:
         if self.crashed:
             self.action['steering'] = 0
-            self.action['acceleration'] = -1.0*self.speed
+            self.action['acceleration'] = -1.0 * self.speed
         self.action['steering'] = float(self.action['steering'])
         self.action['acceleration'] = float(self.action['acceleration'])
         if self.speed > self.MAX_SPEED:
@@ -200,8 +199,9 @@ class Vehicle(Loggable):
         if np.linalg.norm(other.position - self.position) > self.LENGTH:
             return False
         # Accurate rectangular check
-        return utils.rotated_rectangles_intersect((self.position, 0.9*self.LENGTH, 0.9*self.WIDTH, self.heading),
-                                                  (other.position, 0.9*other.LENGTH, 0.9*other.WIDTH, other.heading))
+        return utils.rotated_rectangles_intersect((self.position, 0.9 * self.LENGTH, 0.9 * self.WIDTH, self.heading),
+                                                  (
+                                                  other.position, 0.9 * other.LENGTH, 0.9 * other.WIDTH, other.heading))
 
     @property
     def direction(self) -> np.ndarray:

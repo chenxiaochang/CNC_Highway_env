@@ -19,3 +19,7 @@ _build
 
 # Outputs
 **/out/*
+
+#highway-env
+highway_env/envs/overtaking_env.py
+highway_env/envs/testvehicle.py

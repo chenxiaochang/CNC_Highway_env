@@ -1,4 +1,4 @@
-This event was forked from eleurent/highway-env，we will update some new environments to test experiment results.
+this repository will be deleted. And the modified code will be update at chenxiaochang/env-highway
 ## Installation this event
 
 `pip install --user git+https://github.com/chenxiaochang/CNC_Highway_env`

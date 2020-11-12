@@ -35,6 +35,9 @@ class TwoWayEnv(AbstractEnv):
             "action": {
                 "type": "DiscreteMetaAction",
             },
+            "manual_control": True,
+            "screen_width": 1800,  # [px]
+            "screen_height": 300,  # [px]
         })
         return config
 
@@ -120,5 +123,5 @@ class TwoWayEnv(AbstractEnv):
 register(
     id='two-way-v0',
     entry_point='highway_env.envs:TwoWayEnv',
-    max_episode_steps=15
+    #max_episode_steps=15
 )

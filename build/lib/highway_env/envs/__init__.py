@@ -7,3 +7,4 @@ from highway_env.envs.two_way_env import *
 from highway_env.envs.intersection_env import *
 from highway_env.envs.lane_keeping_env import *
 from highway_env.envs.overtaking_env import *
+from highway_env.envs.testvehicle import *

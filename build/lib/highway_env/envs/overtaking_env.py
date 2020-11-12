@@ -28,6 +28,7 @@ class OvertakingEnv(AbstractEnv):
     LEFT_LANE_REWARD: float = 0.2  # 左边线收益 the initial reward is 0.2
     HIGH_SPEED_REWARD: float = 0.8  # 高速度奖励  0.8
     RIGHT_LANE_REWARD: float = 0.3  # defined by myself
+    TERMINAL_REWARD: float = 5
 
     @classmethod
     def default_config(cls) -> dict:
@@ -53,43 +54,20 @@ class OvertakingEnv(AbstractEnv):
                 "type": "DiscreteMetaAction",
             },
             # "other_vehicles_type": "highway_env.vehicle.behavior.DefensiveVehicle",
-            "manual_control": True,
-            "duration": 5  # [s]
+            # "manual_control": True,
+            "duration": 30,  # [s]
+            "off_road_terminal": True
         })
         return config
 
-    def _reward(self, action: int) -> float:
-        """
-        The vehicle is rewarded for driving with high speed
-        :param action: the action performed
-        :return: the reward of the state-action transition
-        """
-        neighbours = self.road.network.all_side_lanes(self.vehicle.lane_index)  # 获得同一道路的所有车道索引
-        # print(neighbours)  # [('a', 'b', 0), ('a', 'b', 1)]  len(neighbours)=2
-        # print(self.vehicle.speed_index)  # input speed about 25,and the index=1
-        reward = self.COLLISION_REWARD * self.vehicle.crashed + \
-                 self.HIGH_SPEED_REWARD * self.vehicle.speed_index / (self.vehicle.SPEED_COUNT - 1) \
-                 + self.LEFT_LANE_REWARD * (len(neighbours) - 1 - self.vehicle.target_lane_index[2]) / (
-                         len(neighbours) - 1) + self.RIGHT_LANE_REWARD * (self.vehicle.target_lane_index[2]) / (
-                         len(neighbours) - 1)
-        # x = self.vehicle.speed_index
-        # y = self.vehicle.index_to_speed(self.vehicle.speed_index)
-        # z = self.vehicle.speed_to_index(y)
-        # print("the x = {},y ={},z = {}".format(x, y, z))  # x=2 y=30,z=2 | x=1,y=25,z=1
-        # print(self.vehicle.SPEED_COUNT)  equal to 3
-        # print(self.vehicle.target_lane_index[0])  # a
-        # print(self.vehicle.target_lane_index[1])  # b
-        # print(self.vehicle.target_lane_index[2])  # 0/1 ego_vehicle 所在车道
-
-        return reward
-
     def _is_terminal(self) -> bool:
         """The episode is over if the ego vehicle crashed or the time is out."""
-        return self.vehicle.crashed or self.steps >= self.config["duration"]  # 没效果，why？
+        return self.vehicle.crashed or self.steps >= self.config["duration"] \
+               or (self.config["off_road_terminal"] and not self.vehicle.on_road)
 
-    # def _cost(self, action: int) -> float:  # 成本函数=碰撞成本+对车道行驶的时间成本
-    #     """The constraint signal is the time spent driving on the opposite lane, and occurrence of collisions."""
-    #     return float(self.vehicle.crashed) + float(self.vehicle.lane_index[2] == 0) / 15
+    def _cost(self, action: int) -> float:  # 成本函数=碰撞成本+对车道行驶的时间成本
+        """The constraint signal is the time spent driving on the opposite lane, and occurrence of collisions."""
+        return float(self.vehicle.crashed) + float(self.vehicle.lane_index[2] == 0) / 15
 
     def reset(self) -> np.ndarray:
         super().reset()
@@ -100,7 +78,41 @@ class OvertakingEnv(AbstractEnv):
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, dict]:
         self.steps += 1
+        # print(self.steps)
         return super().step(action)
+
+    def _reward(self, action: int) -> float:
+        """
+        The vehicle is rewarded for driving with high speed
+        :param action: the action performed
+        :return: the reward of the state-action transition
+        """
+        neighbours = self.road.network.all_side_lanes(self.vehicle.lane_index)  # 获得同一道路的所有车道索引
+        # print(neighbours)  # [('a', 'b', 0), ('a', 'b', 1)]  len(neighbours)=2
+
+        # print(self.vehicle.speed_index)  # input speed about 30,and the index=2
+        if (self.steps >= self.config["duration"] or not self.vehicle.on_road):
+            reward = self.COLLISION_REWARD * self.vehicle.crashed + self.HIGH_SPEED_REWARD * self.vehicle.speed_index / (
+                    self.vehicle.SPEED_COUNT - 1) \
+                     + self.LEFT_LANE_REWARD * (len(neighbours) - 1 - self.vehicle.target_lane_index[2]) / (
+                             len(neighbours) - 1) + self.RIGHT_LANE_REWARD * (self.vehicle.target_lane_index[2]) / (
+                             len(neighbours) - 1) + self.TERMINAL_REWARD
+        else:
+            reward = self.COLLISION_REWARD * self.vehicle.crashed + self.HIGH_SPEED_REWARD * self.vehicle.speed_index / (
+                    self.vehicle.SPEED_COUNT - 1) \
+                     + self.LEFT_LANE_REWARD * (len(neighbours) - 1 - self.vehicle.target_lane_index[2]) / (
+                             len(neighbours) - 1) + self.RIGHT_LANE_REWARD * (self.vehicle.target_lane_index[2]) / (
+                             len(neighbours) - 1)
+        # x = self.vehicle.speed_index
+        # y = self.vehicle.index_to_speed(self.vehicle.speed_index)
+        # z = self.vehicle.speed_to_index(y)
+        # print("the x = {},y ={},z = {}".format(x, y, z))  # x=2 y=30,z=2 | x=1,y=25,z=1
+        # print(self.vehicle.SPEED_COUNT)  equal to 3
+        # print(self.vehicle.target_lane_index[0])  # a
+        # print(self.vehicle.target_lane_index[1])  # b
+        # print(self.vehicle.target_lane_index[2])  # 0/1 ego_vehicle 所在车道
+
+        return reward
 
     def _make_road(self, length=800):  # 建立长度800的车道
         """
@@ -151,13 +163,13 @@ class OvertakingEnv(AbstractEnv):
                               speed=24 + 2 * self.np_random.randn(),  # 每一辆车的速度
                               enable_lane_change=False)
             )
-        for i in range(4):  # 在车道0上加上3辆车
+        for i in range(3):  # 在车道0上加上3辆车
             v = vehicles_type(road,
                               position=road.network.get_lane(("b", "a", 0))
                               .position(200 + 100 * i + 10 * self.np_random.randn(), 0),
                               heading=road.network.get_lane(("b", "a", 0)).heading_at(200 + 100 * i),
-                              speed=20 + 3 * self.np_random.randn(),
-                              enable_lane_change=False)  # 5_.>3
+                              speed=20 + 5 * self.np_random.randn(),
+                              enable_lane_change=False)  #
             v.target_lane_index = ("b", "a", 0)
             self.road.vehicles.append(v)
 
